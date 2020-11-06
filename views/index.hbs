@@ -1,13 +1,24 @@
-<h3>My Bookstore</h3>
-<table>
-    <tr>
-        {{#each letterArray}}
-        <td><a href="/list?q={{this}}">{{this}}</a></td>
-        {{/each}}
-    </tr>
-    <tr>
-        {{#each numberArray}}
-        <td><a href="/list?q={{this}}">{{this}}</a></td>
-        {{/each}}
-    </tr>
-</table>
+<div class="row ml-3">
+    <div class="col-6">
+        <h3 class="display-3 text-primary font-weight-bold mt-5">My Bookstore</h3>
+        <p class="lead font-italic">Search for book details and reviews.</p>
+        <hr>
+
+        <div class="row row-cols-5">
+            {{#each letterArray}}
+            <div class="col mt-3">
+                <a href="/list?q={{this}}" class="btn btn-outline-secondary text-center col-sm-6">{{this}}</a>
+            </div>
+            {{/each}}
+        </div>
+
+        <div class="row row-cols-5">
+            {{#each numberArray}}
+            <div class="col mt-3">
+                <a href="/list?q={{this}}" class="btn btn-outline-secondary text-center col-sm-6">{{this}}</a>
+            </div>
+            {{/each}}
+        </div>
+
+    </div>
+</div>

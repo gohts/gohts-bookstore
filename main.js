@@ -42,7 +42,7 @@ app.set('view engine', 'hbs');
 // Configure Routes
 
 app.get('/', (req, res) => {
-    const letterArray = 'ABCDEFGHIJKLMNOPQRSTUWXYZ'.split('');
+    const letterArray = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
     const numberArray = '0123456789'.split('');
 
     res.status(200);
@@ -87,7 +87,8 @@ app.get('/list', async (req, res) => {
         res.render('list', {
             isFirstPage, isLastPage, nextOffset, prevOffset,
             letter: startLetter,
-            recs: results[0]
+            recs: results[0],
+            totalCount
         });
 
     } catch (e) {
