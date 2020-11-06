@@ -1,0 +1,16 @@
+<h3>My Bookstore</h3>
+
+<form method="GET" action="/booklist">
+    <table>
+        <tr>
+            {{#each letterArray}}
+            <td><a href="/booklist?q={{this}}">{{this}}</a></td>
+            {{/each}}
+        </tr>
+        <tr>
+            {{#each numberArray}}
+            <td><a href="/booklist?q={{this}}">{{this}}</a></td>
+            {{/each}}
+        </tr>
+    </table>
+</form>
