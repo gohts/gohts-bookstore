@@ -1,0 +1,21 @@
+<table>
+    <tr>
+        <td>
+            <img src="{{book.image_url}}" alt="">
+            <h5>Pages: {{book.pages}}</h5>
+            <h5>Rating: {{book.rating}} ({{book.rating_count}})</h5>
+            <h5>Genres:</h5>
+            <h5>{{genres}}</h5>
+        </td>
+        <td>
+            <h3>{{book.title}}</h3>
+            <h3>by {{authors}}</h3>
+            <p>{{book.description}}</p>
+            <br>
+            <a href="/reviews/{{book.title}}">Find Review</a>
+        </td>
+    </tr>
+</table>
+<br><br>
+
+<button><a href="/">Home</a></button>

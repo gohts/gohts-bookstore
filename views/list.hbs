@@ -1,0 +1,19 @@
+<h3>List of Book starts with Letter {{letter}}</h3>
+{{#each recs}}
+<a href="/details/{{this.book_id}}">{{this.title}}</a><br>
+{{/each}}
+
+{{#if isFirstPage}}
+<a href="">No previous Page</a><br>
+{{else}}
+<a href="/list?q={{letter}}&offset={{prevOffset}}">Previous Page</a><br>
+{{/if}}
+
+{{#if isLastPage}}
+<a href="">No next Page</a><br>
+{{else}}
+<a href="/list?q={{letter}}&offset={{nextOffset}}">Next Page</a><br>
+{{/if}}
+
+<br><br>
+<button><a href="/">Home</a></button>
