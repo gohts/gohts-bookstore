@@ -5,11 +5,11 @@
             <h5>Pages: {{book.pages}}</h5>
             <h5>Rating: {{book.rating}} ({{book.rating_count}})</h5>
             <h5>Genres:</h5>
-            <h5>{{genres}}</h5>
+            {{#each genres}} {{#if @last}}{{this}}{{else}}{{this}}, {{/if}} {{/each}}
         </td>
         <td>
             <h3>{{book.title}}</h3>
-            <h3>by {{authors}}</h3>
+            <h3>by {{#each authors}} {{#if @last}}{{this}}{{else}}{{this}}, {{/if}} {{/each}}</h3>
             <p>{{book.description}}</p>
             <br>
             <a href="/reviews/{{book.title}}">Find Review</a>

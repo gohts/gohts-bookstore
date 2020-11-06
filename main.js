@@ -1,46 +1,46 @@
-// load libraries
+// Load Libraries
 const express = require('express');
 const handlebars = require('express-handlebars');
 const mysql = require('mysql2/promise');
-const morgan = require('morgan');
 const withQuery = require('with-query').default;
 const fetch = require('node-fetch');
+const morgan = require('morgan');
 
-// configure environment
+// Configure Environment
 const PORT = parseInt(process.argv[2]) || parseInt(process.env.PORT) || 3000;
 
-// configure SQL
+// Configure SQL
 const pool = mysql.createPool({
     host: process.env.DB_HOST || 'localhost',
     port: parseInt(process.env.DB_PORT) || 3306,
     database: process.env.DB_NAME || 'goodreads',
-    // review again
     user: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
     connectionLimit: 4,
     timezone: '+08:00'
-})
+});
 
 // SQL Statements
 const SQL_GET_BOOK_LIST = 'SELECT book_id, title FROM book2018 WHERE left(title,1) = ? ORDER BY title LIMIT ? OFFSET ?';
 const SQL_GET_BOOK_COUNT = 'SELECT count(book_id) as bookcount FROM book2018 WHERE left(title,1) = ?';
 const SQL_GET_BOOK_DETAILS = 'SELECT * FROM book2018 where book_id = ?'
 
-// configure NY Times API
+// Configure NYTimes API
 const baseUrl = 'https://api.nytimes.com/svc/books/v3/reviews.json';
 const APIKEY = process.env.APIKEY;
 
-// create an express instance
+// Create an Express Instance
 const app = express ();
 
-// configure morgan
+// Configure Morgan
 app.use(morgan('combined'));
 
-// configure handlebars
+// Configure Handlebars
 app.engine('hbs', handlebars({defaultLayout: 'default.hbs'}));
 app.set('view engine', 'hbs');
 
-// configure routes
+// Configure Routes
+
 app.get('/', (req, res) => {
     const letterArray = 'ABCDEFGHIJKLMNOPQRSTUWXYZ'.split('');
     const numberArray = '0123456789'.split('');
@@ -62,18 +62,19 @@ app.get('/list', async (req, res) => {
 
     const conn = await pool.getConnection();
 
-    try {
-        const results = await conn.query(SQL_GET_BOOK_LIST,[startLetter, limit, offset]);
+    console.info(`Request Book List for Letter : ${startLetter}`);
 
+    try {
         const bookCount = await conn.query(SQL_GET_BOOK_COUNT,[startLetter]);
 
-        const totalCount = bookCount[0][0].bookcount
+        const totalCount = bookCount[0][0].bookcount;
         const isFirstPage = offset <= 0;
-        const isLastPage = (offset + limit) >= totalCount
+        const isLastPage = (offset + limit) >= totalCount;
 
-        // review again
+        const results = await conn.query(SQL_GET_BOOK_LIST,[startLetter, limit, offset]);
+
         if (results[0].length <= 0) {
-            res.status(200);
+            res.status(404);
             res.type('text/html');
             res.render('nobook', {
                 letter: startLetter
@@ -107,20 +108,21 @@ app.get('/details/:bookid', async (req, res) => {
 
     const conn = await pool.getConnection();
 
+    console.info(`Request Details for : ${bookId}`);
+
     try {
         const results = await conn.query(SQL_GET_BOOK_DETAILS,[bookId]);
         const recs = results[0];
         
-        // review again
         if (recs.length <= 0) {
-            res.status(200);
-            res.type('text/html');
-            res.render('nobook');
-            return;
+            res.status(404)
+            res.type('text/html')
+            res.send(`Not found: ${bookId}`)
+            return
         }
 
-        const genres = recs[0].genres.replace(/\|/g,', ');
-        const authors = recs[0].authors.split(/\|/g,', ');
+        const genres = recs[0].genres.split('|');
+        const authors = recs[0].authors.split('|');
 
         res.format({
             'text/html': () => {
@@ -131,16 +133,25 @@ app.get('/details/:bookid', async (req, res) => {
                 });
             },
             'application/json': () => {
-                res.json(recs[0])
+                const data = {
+                    bookId: recs[0].book_id,
+                    title: recs[0].title,
+                    authors: authors,
+                    summary: recs[0].description,
+                    pages: recs[0].pages,
+                    rating: recs[0].rating,
+                    ratingCount: recs[0].rating_count,
+                    genre: genres
+                }
+                
+                res.json(data);
+            },
+            default: () => {
+                res.status(406)
+                res.type('text/plain')
+                res.send(`Not supported: ${req.get("Accept")}`)
             }
         })
-
-        res.status(200);
-        res.type('text/html');
-        res.render('details', {
-            genres, authors,
-            book: recs[0]
-        });
 
     } catch (e) {
         res.status(500);
@@ -158,22 +169,19 @@ app.get('/reviews/:title', async (req, res) => {
 
     const bookTitle = req.params.title;
 
-    console.log(bookTitle);
-
     const url = withQuery(baseUrl, {
         'api-key': APIKEY,
         title: bookTitle
     })
 
+    console.info(`Request Reviews for : ${bookTitle}`);
+
     fetch(url)
         .then(res => res.json())
         .then(json => {
 
-            console.log(json);
-
-            // review again
             if (json.num_results <= 0) {
-                res.status(200);
+                res.status(404);
                 res.type('text/html');
                 res.render('noreview', {
                     bookTitle
@@ -197,7 +205,6 @@ app.get('/reviews/:title', async (req, res) => {
         })
 
 })
-
 
 // load static resources
 app.use(express.static(__dirname + '/public'));
